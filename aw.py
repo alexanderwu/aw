@@ -23,9 +23,36 @@ def reload(copy_clipboard=False) -> None:
     Args:
         copy_clipboard (bool, optional): Copy contents to clipboard (does not work via remote-ssh). Defaults to False.
     """
+    _reload_str = f'%load_ext autoreload\n%autoreload 2'
     if copy_clipboard:
-        copy('%load_ext autoreload\n%autoreload 2')
-    print('%load_ext autoreload\n%autoreload 2')
+        _copy(_reload_str)
+    print(_reload_str)
+
+def reloada(copy_clipboard=False) -> None:
+    """Prints importlib.reload function.
+
+    Args:
+        copy_clipboard (bool, optional): Copy contents to clipboard (does not work via remote-ssh). Defaults to False.
+    """
+    _reload_str = f'from importlib import reload; reload(aw);'
+    if copy_clipboard:
+        _copy(_reload_str)
+    print(_reload_str)
+
+def _copy(text: str) -> None:
+    """Copy text to clipboard.
+
+    Args:
+        text (str): text to copy to clipboard
+    """
+    # Source: https://stackoverflow.com/questions/11063458/python-script-to-copy-text-to-clipboard
+    try:
+        import pyperclip  # type: ignore
+        pyperclip.copy(text)
+    except ModuleNotFoundError:
+        import sys
+        sys.stderr.write("Cannot copy. Try `pip install pyperclip`\n")
+
 
 def dirr(arg, like: str=None) -> pd.DataFrame:
     """Displays dir(arg) but with more details and formatted as DataFrame.
@@ -53,6 +80,7 @@ def dirr(arg, like: str=None) -> pd.DataFrame:
     dirr_df['doc'] = [get_attr(arg, attr) if str(tt) != "<class 'method'>" else doc
                       for attr, tt, doc in zip(dirr_df['attr'], dirr_df['type'], dirr_df['doc'])]
     return dirr_df
+
 
 def ls(path: Path | str = '.', resolve=False) -> pd.DataFrame:
     """View contents of `ls` command as DataFrame.
@@ -91,6 +119,7 @@ def ls(path: Path | str = '.', resolve=False) -> pd.DataFrame:
     df.g = g.__get__(df)
     df.open = open.__get__(df)
     return df
+
 
 def mkdir(path: Path | str, **kwargs) -> pd.DataFrame:
     """Make directory.
@@ -174,19 +203,6 @@ def debug(fn: Callable) -> Callable:
         return result
     return wrapper
 
-def copy(text: str) -> None:
-    """Copy text to clipboard.
-
-    Args:
-        text (str): text to copy to clipboard
-    """
-    # Source: https://stackoverflow.com/questions/11063458/python-script-to-copy-text-to-clipboard
-    try:
-        import pyperclip  # type: ignore
-        pyperclip.copy(text)
-    except ModuleNotFoundError:
-        import sys
-        sys.stderr.write("Cannot copy. Try `pip install pyperclip`\n")
 
 def get_sessions(pd_series: pd.Series, diff=pd.Timedelta(30, 'min')) -> pd.Series:
     """Group elements into "sessions".
