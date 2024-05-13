@@ -5,7 +5,7 @@ Alex's data science helper functions
 ## Installation
 
 ```sh
-pip install git+https://github.com/alexanderwu/alexwu.git
+pip install git+https://github.com/alexanderwu/aw.git
 ```
 
 ## Development
