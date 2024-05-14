@@ -679,31 +679,35 @@ def percent(pd_series: pd.Series, caption='', display_false=False) -> pd.DataFra
     return styled_df
 perc = percent
 
-def append_percent(df: pd.DataFrame, col=None, vmax=None, verbose=True, inplace=False) -> pd.DataFrame:
+def append_percent(df: pd.DataFrame, col=None, vmax=None, verbose=False, inplace=False) -> pd.DataFrame:
     if not inplace:
         df = df.copy()
+
     if col is None:
         col = df.shape[1] - 1
 
     if isinstance(col, int):
         pd_series = df.iloc[:,col]
         col_i = col + 1
+        col_name = '%'
     else:
         pd_series = df[col]
         col_i = df.columns.to_list().index(col) + 1
+        col_name = f'{df.columns[col_i-1]} %'
+
 
     pd_series = pd.to_numeric(pd_series, errors='coerce')
     if vmax is None:
         vmax = pd_series.sum()
 
     percent_series = 100 * pd_series / vmax
-    df.insert(col_i, '%', percent_series)
+    df.insert(col_i, col_name, percent_series)
 
     if verbose:
         # print(f'Total: {vmax:,}')
         styled_df = (df.style
-            .bar(vmin=0, vmax=100, color='#543b66', subset=['%'])
-            .format('{:,.1f}', subset=['%'])
+            .bar(vmin=0, vmax=100, color='#543b66', subset=[col_name])
+            .format('{:,.1f}', subset=[col_name])
         )
         return styled_df
     if not inplace:
@@ -761,7 +765,7 @@ def df_index(df, verbose=False, k=False):
     if not isinstance(df, pd.DataFrame):
         df = pd.DataFrame(df)
     index_name = tuple(['-']*df.columns.nlevels) if df.columns.nlevels > 1 else '-'
-    index_df = df.iloc[:,0].map(lambda x: '').to_frame(name=index_name)
+    index_df = df.iloc[:,0].map(lambda _: '').to_frame(name=index_name)
     if verbose:
         displays(index_df, df.style.hide(), k=k)
     else:
@@ -1383,7 +1387,7 @@ def grouper(iterable: Iterable, n: int, fillvalue=None) -> Iterable:
 
 @ignore_warnings
 def report(func: Callable | list | pd.DataFrame, *df_args,
-           compare=False,concat=False,k_list=2, fillna=False, **kwargs) -> pd.DataFrame:
+           compare=False, concat=False, k_list=2, fillna=False, **kwargs) -> pd.DataFrame:
     """Report descriptive statistics.
 
     Args:
