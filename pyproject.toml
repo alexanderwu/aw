@@ -1,7 +1,7 @@
 [project]
 name = "aw"
 version = "0.2.0"
-description = "Add your description here"
+description = "Alex Wu's data science helper functions"
 authors = [{ name = "Alexander Wu", email = "alexander.wu@roche.com" }]
 dependencies = ["pandas>=2", "numpy", "scipy", "ipython", "ipykernel"]
 readme = "README.md"
@@ -9,3 +9,7 @@ requires-python = ">= 3.10"
 
 [project.optional-dependencies]
 copy = ["pyperclip"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
