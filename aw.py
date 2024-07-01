@@ -661,7 +661,8 @@ def percent(pd_series: pd.Series, caption='', display_false=False) -> pd.DataFra
     Returns:
         pd.DataFrame: Displayed percentage
     """
-    df = pd.value_counts(pd_series).to_frame().T
+    # df = pd.value_counts(pd_series).to_frame().T
+    df = pd_series.value_counts().to_frame().T
     if True not in df:
         df[True] = 0
     if False not in df:
@@ -787,7 +788,7 @@ def df_enumerate(df, rows=None, columns=None, inplace=False):
     if not inplace:
         return df
 
-def combo_sizes(set_list: list[set], set_names=None, vmax=None, sort=True) -> pd.DataFrame:
+def combo_sizes(set_list: list[set], set_names=None, vmax=None, sort=True, drop_zeros=True) -> pd.DataFrame:
     """Summarary table of set combinations sizes. Rows represent size of overlapping sets
 
     Args:
@@ -817,6 +818,8 @@ def combo_sizes(set_list: list[set], set_names=None, vmax=None, sort=True) -> pd
     combo_df['%'] = 100*combo_df['Size'] / vmax
     if sort:
         combo_df = combo_df.sort_values('Size', ascending=False)
+    if drop_zeros:
+        combo_df = combo_df.query('Size > 0')
     combo_df.index += 1
 
     def highlight(s):
@@ -827,7 +830,7 @@ def combo_sizes(set_list: list[set], set_names=None, vmax=None, sort=True) -> pd
             .format(precision=1))
     return combo_df_styled
 
-def combo_sizes2(set_list: list[set], set_names=None, vmax=None, sort=True) -> pd.DataFrame:
+def combo_sizes2(set_list: list[set], set_names=None, vmax=None, sort=True, drop_zeros=True) -> pd.DataFrame:
     """Summarary table of set combinations sizes (strict).
 
     Rows represent size of overlapping sets only(which don't containing others).
@@ -872,6 +875,8 @@ def combo_sizes2(set_list: list[set], set_names=None, vmax=None, sort=True) -> p
     combo_df['%'] = 100*combo_df['Size'] / vmax
     if sort:
         combo_df = combo_df.sort_values('Size', ascending=False)
+    if drop_zeros:
+        combo_df = combo_df.query('Size > 0')
     combo_df.index += 1
 
     def highlight(s):
