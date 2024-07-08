@@ -70,7 +70,7 @@ six==1.16.0
     #   python-dateutil
 stack-data==0.6.3
     # via ipython
-tornado==6.4
+tornado==6.4.1
     # via
     #   ipykernel
     #   jupyter-client
