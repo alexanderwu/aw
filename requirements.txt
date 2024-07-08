@@ -8,22 +8,24 @@ debugpy==1.8.1
     # via ipykernel
 decorator==5.1.1
     # via ipython
+exceptiongroup==1.2.1
+    # via ipython
 executing==2.0.1
     # via stack-data
 ipykernel==6.29.4
+    # via aw (pyproject.toml)
 ipython==8.24.0
-    # via ipykernel
+    # via
+    #   aw (pyproject.toml)
+    #   ipykernel
 jedi==0.19.1
     # via ipython
-jinja2==3.1.4
 jupyter-client==8.6.1
     # via ipykernel
 jupyter-core==5.7.2
     # via
     #   ipykernel
     #   jupyter-client
-markupsafe==2.1.5
-    # via jinja2
 matplotlib-inline==0.1.7
     # via
     #   ipykernel
@@ -32,11 +34,13 @@ nest-asyncio==1.6.0
     # via ipykernel
 numpy==1.26.4
     # via
+    #   aw (pyproject.toml)
     #   pandas
     #   scipy
 packaging==24.0
     # via ipykernel
 pandas==2.2.2
+    # via aw (pyproject.toml)
 parso==0.8.4
     # via jedi
 pexpect==4.9.0
@@ -64,6 +68,7 @@ pyzmq==26.0.3
     #   ipykernel
     #   jupyter-client
 scipy==1.13.0
+    # via aw (pyproject.toml)
 six==1.16.0
     # via
     #   asttokens
@@ -82,6 +87,8 @@ traitlets==5.14.3
     #   jupyter-client
     #   jupyter-core
     #   matplotlib-inline
+typing-extensions==4.12.2
+    # via ipython
 tzdata==2024.1
     # via pandas
 wcwidth==0.2.13
