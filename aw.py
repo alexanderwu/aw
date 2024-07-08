@@ -17,27 +17,15 @@ import scipy.stats as st
 from IPython.display import HTML, Markdown, display
 
 
-def reload(copy_clipboard=False) -> None:
-    """Prints Jupyter's autoreload magic function.
+def reload(module=None):
+    """Reload module (for use in Jupyter Notebook)
 
     Args:
-        copy_clipboard (bool, optional): Copy contents to clipboard (does not work via remote-ssh). Defaults to False.
+        module (types.ModuleType, optional): module to reload
     """
-    _reload_str = f'%load_ext autoreload\n%autoreload 2'
-    if copy_clipboard:
-        _copy(_reload_str)
-    print(_reload_str)
-
-def reloada(copy_clipboard=False) -> None:
-    """Prints importlib.reload function.
-
-    Args:
-        copy_clipboard (bool, optional): Copy contents to clipboard (does not work via remote-ssh). Defaults to False.
-    """
-    _reload_str = f'from importlib import reload; reload(aw);'
-    if copy_clipboard:
-        _copy(_reload_str)
-    print(_reload_str)
+    import sys
+    import importlib
+    importlib.reload(module or sys.modules[__name__])
 
 def _copy(text: str) -> None:
     """Copy text to clipboard.
@@ -820,6 +808,7 @@ def combo_sizes(set_list: list[set], set_names=None, vmax=None, sort=True, drop_
         combo_df = combo_df.sort_values('Size', ascending=False)
     if drop_zeros:
         combo_df = combo_df.query('Size > 0')
+    combo_df = combo_df.reset_index(drop=True)
     combo_df.index += 1
 
     def highlight(s):
@@ -877,6 +866,7 @@ def combo_sizes2(set_list: list[set], set_names=None, vmax=None, sort=True, drop
         combo_df = combo_df.sort_values('Size', ascending=False)
     if drop_zeros:
         combo_df = combo_df.query('Size > 0')
+    combo_df = combo_df.reset_index(drop=True)
     combo_df.index += 1
 
     def highlight(s):

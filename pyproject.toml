@@ -1,6 +1,6 @@
 [project]
 name = "aw"
-version = "0.2.0"
+version = "0.2.1"
 description = "Alex Wu's data science helper functions"
 authors = [{ name = "Alexander Wu", email = "alexander.wu@roche.com" }]
 dependencies = ["pandas>=2", "numpy", "scipy", "ipython", "ipykernel"]
