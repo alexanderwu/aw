@@ -10,11 +10,12 @@ import warnings
 from collections.abc import Callable, Iterable
 from functools import cache, reduce, wraps
 from pathlib import Path
+from textwrap import indent, dedent
 
+from IPython.display import HTML, Markdown, display
 import numpy as np
 import pandas as pd
 import scipy.stats as st
-from IPython.display import HTML, Markdown, display
 
 
 def reload(module=None):
@@ -609,6 +610,106 @@ def display100(df: pd.Series | pd.DataFrame, ii=10, N=100, na_rep=None) -> None:
     displays(*[df.iloc[a:b] for a, b in pairwise(range(0, N+ii, ii))], na_rep=na_rep)
 disp100 = display100
 d100 = display100
+
+def _htag(content, tag='div', attrs='', **kwargs):
+    begin_tag = tag
+    if 'open' in kwargs:
+        if kwargs['open']:
+            begin_tag = f'{begin_tag} open'
+        del kwargs['open']
+    if attrs:
+        if isinstance(attrs, (tuple, list)):
+            attrs = ' '.join(attrs)
+        begin_tag = f'{begin_tag} {attrs}'
+    style = ' '.join([f'{k.replace("_", "-")}: {v};' for k, v in kwargs.items()]).strip()
+    if style:
+        begin_tag = f'{begin_tag} style="{style}"'
+
+    if not isinstance(content, (tuple, list)):
+        content = [content]
+    content = [str(c) for c in content]
+    _content = "\n".join(content)
+    _str = dedent(f'''
+        <{begin_tag}>
+            {indent(_content, ' '*12).lstrip()}
+        </{tag}>
+    ''').strip()
+    return _str
+
+def htag(*args, **kwargs):
+    display(HTML(_htag(*args, **kwargs)))
+
+def _hdetails(summary, content, **kwargs):
+    if 'font_size' not in kwargs:
+        kwargs['font_size'] = '16px'
+    summary_style = dict(color='skyblue')
+    content_style = dict(padding_left='1em')
+    _non_str_style = dict(color='orange', font_family='monospace')
+    if not isinstance(summary, str):
+        summary_style = {**summary_style, **_non_str_style}
+    if not isinstance(content, str):
+        content_style = {**content_style, **_non_str_style}
+    if content is None:
+        content = 'None'
+    # if content == {}:
+    #     content = '{}'
+    # if content == []:
+    #     content = '[]'
+    _hsummary = _htag(str(summary), tag='summary', **summary_style)
+    _hcontent = _htag(str(content), **content_style)
+    return _htag([_hsummary, _hcontent], tag='details', **kwargs)
+
+def hdetails(*args, **kwargs):
+    display(HTML(_hdetails(*args, **kwargs)))
+
+def _display_json(json_dict, open=False):
+    _res = []
+    for k, v in json_dict.items():
+        if isinstance(v, (tuple, list)) and len(v) == 0:
+            _res.append(_hdetails(k, [], open=open))
+        elif isinstance(v, (tuple, list)):
+            _details = '\n'.join([
+                _display_json({v_i: v_val}, open=open)
+                for v_i, v_val in enumerate(v, 1)
+            ])
+            _res.append(_hdetails(k, _details, open=open))
+        elif isinstance(v, dict) and len(v) == 0:
+            _res.append(_hdetails(k, {}, open=open))
+        elif isinstance(v, dict):
+            _res.append(_hdetails(k, _display_json(v, open=open), open=open))
+        else:
+            _res.append(_hdetails(k, v, open=open))
+    return '\n'.join(_res)
+
+def display_json(json_dict, open=False):
+    return HTML(_display_json(json_dict, open=open))
+
+def _display_cols(contents):
+    def column_template(content):
+        return dedent(f"""
+            <div class='column'>
+                {indent(content, ' '*16).strip()}
+            </div>
+        """).strip()
+    column_contents = '\n'.join([column_template(content) for content in contents]).strip()
+    template = dedent(f"""
+        <style>
+            .row {{
+                display: flex;
+                flex-direction: row;
+            }}
+            .column {{
+                flex: 1;
+            }}
+        </style>
+        <div class='row'>
+            {indent(column_contents, ' '*12).strip()}
+        </div>
+    """).strip()
+    return template
+
+def display_cols(*args):
+    return HTML(_display_cols(*args))
 
 def display_code(code: str, language: str = 'python'):
     markdown_code = f'```{language}\n{code}\n```'
