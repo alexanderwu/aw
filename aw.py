@@ -18,6 +18,7 @@ import pandas as pd
 import scipy.stats as st
 
 
+
 def reload(module=None):
     """Reload module (for use in Jupyter Notebook)
 
@@ -862,16 +863,24 @@ def df_index(df, verbose=False, k=False):
         return index_df
 
 def df_enumerate(df, rows=None, columns=None, inplace=False):
+    import pandas.io.formats.style
+    _is_styled = isinstance(df, pandas.io.formats.style.Styler)
     enumerate_rows = (not df.index.is_unique or rows) and rows is not False
     enumerate_columns = (not df.columns.is_unique or columns) and columns is not False
-    if not inplace and (enumerate_rows or enumerate_columns):
+    if not _is_styled and not inplace and (enumerate_rows or enumerate_columns):
         df = df.copy()
     if enumerate_rows:
+        if _is_styled:
+            df.data.reset_index(drop=True, inplace=True)
+        if _is_styled:
+            df.index = [f'{i}_{row}' for i, row in enumerate(df.index)]
         df.index = pd.MultiIndex.from_tuples([(i, *x) if isinstance(x, tuple) else (i,x)
                                               for i, x in enumerate(df.index, 1)])
         # df = df.set_index(pd.MultiIndex.from_tuples([(i, *x) if isinstance(x, tuple) else (i,x)
         #                                              for i, x in enumerate(df.columns, 1)]))
     if enumerate_columns:
+        if _is_styled:
+            df.columns = [f'{i}_{col}' for i, col in enumerate(df.columns)]
         df.columns = pd.MultiIndex.from_tuples([(i, *x) if isinstance(x, tuple) else (i,x)
                                                 for i, x in enumerate(df.columns, 1)])
     if not inplace:
@@ -1004,6 +1013,7 @@ def highlight(df: pd.DataFrame, v, color='DarkSlateGray', subset=None):
         df = df.style
     color = {'w': 'white', 'k': 'black'}.get(color, color)
     return df.applymap(lambda x: f'background-color: {color}' if x == v else '', subset=subset)
+    # return df.map(lambda x: f'background-color: {color}' if x == v else '', subset=subset)
 
 def str_contains(pd_series, *regex_str_list, **kwargs):
     '''
@@ -1163,8 +1173,10 @@ def mean_confidence_interval(data, confidence=0.95):
 
 # Derived from: https://cran.r-project.org/web/packages/stddiff/stddiff.pdf
 def stddiff_categorical(treatment, control):
-    T = pd.value_counts(treatment, sort=False, normalize=True)[1:].values
-    C = pd.value_counts(control, sort=False, normalize=True)[1:].values
+    # T = pd.value_counts(treatment, sort=False, normalize=True)[1:].values
+    # C = pd.value_counts(control, sort=False, normalize=True)[1:].values
+    T = treatment.value_counts(sort=False, normalize=True)[1:].values
+    C = control.value_counts(sort=False, normalize=True)[1:].values
     assert len(T) == len(C)
     K_1 = len(T)
     if K_1 == 1:
@@ -1340,7 +1352,8 @@ def report_categorical(pd_series: pd.Series, dropna=True, style=True) -> dict:
     """
     if pd_series.dtype.name == 'bool':
         pd_series = pd.Categorical(pd_series, categories=[True, False]).rename_categories({True: 'Yes', False: 'No'})
-    vcounts = pd.value_counts(pd_series, sort=False, dropna=dropna)
+    # vcounts = pd.value_counts(pd_series, sort=False, dropna=dropna)
+    vcounts = pd_series.value_counts(sort=False, dropna=dropna)
     vcount_dict = dict(zip(vcounts.index.to_list(), [[x, '', ''] for x in vcounts]))
     if not dropna:
         vcount_dict[np.nan] = vcount_dict.get(np.nan, [0, '', ''])
@@ -1463,6 +1476,7 @@ def report_rows_df(df: pd.DataFrame, cols: str | list[str]=None,
                 return (f'background: linear-gradient(90deg, {color} {x}%, transparent {x}%); '
                         'width: 10em; color: rgba(0,0,0,0);')
         return res.style.applymap(bar_percent, color='steelblue', subset=['95% CI/Range'])
+        # return res.style.map(bar_percent, color='steelblue', subset=['95% CI/Range'])
     return res
 
 # Source: https://docs.python.org/3/library/itertools.html#itertools-recipes
