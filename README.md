@@ -8,6 +8,15 @@ Alex's data science helper functions
 pip install git+https://github.com/alexanderwu/aw.git
 ```
 
+OR
+
+```sh
+uv add --no-sync git+https://github.com/alexanderwu/aw.git
+uv pip compile pyproject.toml -o requirements.txt
+# uv pip sync requirements.txt
+uv pip install -r requirements.txt
+```
+
 ## Development
 
 ```sh

@@ -29,6 +29,32 @@ def reload(module=None):
     import importlib
     importlib.reload(module or sys.modules[__name__])
 
+
+def now(time=True, file=True) -> str:
+    """Output current datetime formatted.
+
+    Args:
+        time (bool): output formatted datetime (vs date)
+        file (bool): whether to output filesystem compatible format
+
+    Usage:
+    >>> from pathlib import Path
+    >>> datetime_now = now(time=False)
+    >>> path_now = Path(f"data/{datetime_now}")
+    >>> path_now.mkdir(parents=True, exist_ok=True)
+    """
+    from datetime import datetime
+    datetime_now = datetime.now()
+    if time:
+        if file:
+            return datetime_now.strftime(r"%Y-%m-%d_%H%M%S")
+        return datetime_now.strftime(r"%#I:%M%p").lower()
+    else:
+        if file:
+            return datetime_now.strftime(r"%Y-%m-%d")
+        return datetime_now.strftime(r"%#m/%#d/%y (%A)")
+
+
 def _copy(text: str) -> None:
     """Copy text to clipboard.
 
@@ -528,6 +554,32 @@ def isnotebook() -> bool:
     except NameError:
         return False      # Probably standard Python interpreter
 
+
+def jupyter_css_style() -> HTML:
+    """(For Jupyter) Enable transparent background for tqdm progress bar.
+    Especially useful for VS Code dark mode themes because tqdm.notebook display white background by default.
+
+    Usage:
+    >>> from tqdm.notebook import tqdm
+    >>> jupyter_css_style()
+    >>> for i in (pbar := tqdm(range(10)):
+    ...     pbar.set_description(f"{i=}")
+    """
+    css_style = HTML("""
+        <!-- https://stackoverflow.com/questions/71534901/make-tqdm-bar-dark-in-vscode-jupyter-notebook -->
+        <style>
+        .cell-output-ipywidget-background {
+            background-color: transparent !important;
+        }
+        :root {
+            --jp-widgets-color: var(--vscode-editor-foreground);
+            --jp-widgets-font-size: var(--vscode-editor-font-size);
+        }
+        </style>
+    """)
+    return css_style
+
+
 def disp(df: pd.DataFrame, caption='', k=2, na_rep='-') -> pd.DataFrame:
     """(For Jupyter) Prints newlines instead of '\\\\n' characters for easier reading.
     Optionally, you can label dataframes with caption and round numbers
@@ -842,11 +894,15 @@ def describe(pd_series, caption='', count=False):
     else:
         return df
 
-def uniq(x_list):
-    unique_list = list(set([x for x in x_list if pd.notnull(x)]))
+def uniq(x_list, squeeze=False, dropna=True):
+    unique_list = list(dict.fromkeys(x_list).keys())
+    if dropna:
+        unique_list = [x for x in unique_list if pd.notnull(x)]
+    if squeeze and len(unique_list) == 1:
+        return unique_list[0]
     return unique_list
 
-def duplicates(df, subset=None, keep=False):
+def duplicates(df, subset=None, keep=False) -> pd.DataFrame:
     duplicates_df = df[df.duplicated(subset=subset, keep=keep)]
     return duplicates_df
 

@@ -2,13 +2,13 @@
 #    uv pip compile pyproject.toml -o requirements.txt
 asttokens==2.4.1
     # via stack-data
+colorama==0.4.6
+    # via ipython
 comm==0.2.2
     # via ipykernel
 debugpy==1.8.1
     # via ipykernel
 decorator==5.1.1
-    # via ipython
-exceptiongroup==1.2.1
     # via ipython
 executing==2.0.1
     # via stack-data
@@ -20,12 +20,16 @@ ipython==8.24.0
     #   ipykernel
 jedi==0.19.1
     # via ipython
+jinja2==3.1.6
+    # via aw (pyproject.toml)
 jupyter-client==8.6.1
     # via ipykernel
 jupyter-core==5.7.2
     # via
     #   ipykernel
     #   jupyter-client
+markupsafe==3.0.3
+    # via jinja2
 matplotlib-inline==0.1.7
     # via
     #   ipykernel
@@ -43,16 +47,12 @@ pandas==2.2.2
     # via aw (pyproject.toml)
 parso==0.8.4
     # via jedi
-pexpect==4.9.0
-    # via ipython
 platformdirs==4.2.1
     # via jupyter-core
 prompt-toolkit==3.0.43
     # via ipython
 psutil==5.9.8
     # via ipykernel
-ptyprocess==0.7.0
-    # via pexpect
 pure-eval==0.2.2
     # via stack-data
 pygments==2.18.0
@@ -63,6 +63,8 @@ python-dateutil==2.9.0.post0
     #   pandas
 pytz==2024.1
     # via pandas
+pywin32==311
+    # via jupyter-core
 pyzmq==26.0.3
     # via
     #   ipykernel
@@ -87,8 +89,6 @@ traitlets==5.14.3
     #   jupyter-client
     #   jupyter-core
     #   matplotlib-inline
-typing-extensions==4.12.2
-    # via ipython
 tzdata==2024.1
     # via pandas
 wcwidth==0.2.13
