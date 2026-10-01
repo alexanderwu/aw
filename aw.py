@@ -10,13 +10,12 @@ import warnings
 from collections.abc import Callable, Iterable
 from functools import cache, reduce, wraps
 from pathlib import Path
-from textwrap import indent, dedent
+from textwrap import dedent, indent
 
-from IPython.display import HTML, Markdown, display
 import numpy as np
 import pandas as pd
 import scipy.stats as st
-
+from IPython.display import HTML, Markdown, display
 
 
 def reload(module=None):
@@ -25,8 +24,8 @@ def reload(module=None):
     Args:
         module (types.ModuleType, optional): module to reload
     """
-    import sys
     import importlib
+    import sys
     importlib.reload(module or sys.modules[__name__])
 
 
@@ -44,7 +43,8 @@ def now(time=True, file=True) -> str:
     >>> path_now.mkdir(parents=True, exist_ok=True)
     """
     from datetime import datetime
-    datetime_now = datetime.now()
+    # Generates the local time and embeds the system's exact timezone offset
+    datetime_now = datetime.now().astimezone()
     if time:
         if file:
             return datetime_now.strftime(r"%Y-%m-%d_%H%M%S")
@@ -70,7 +70,7 @@ def _copy(text: str) -> None:
         sys.stderr.write("Cannot copy. Try `pip install pyperclip`\n")
 
 
-def dirr(arg, like: str=None) -> pd.DataFrame:
+def dirr(arg, like: str | None = None) -> pd.DataFrame:
     """Displays dir(arg) but with more details and formatted as DataFrame.
 
     Args:
@@ -131,7 +131,7 @@ def ls(path: Path | str = '.', resolve=False) -> pd.DataFrame:
         from pathlib import PureWindowsPath
         posix_path = self.loc[row].iloc[0].resolve() if row is not None else PureWindowsPath(path.resolve())
         windows_path = PureWindowsPath(posix_path)
-        subprocess.run(['explorer.exe', windows_path])
+        subprocess.run(['explorer.exe', windows_path], check=True)
     df.g = g.__get__(df)
     df.open = open.__get__(df)
     return df
@@ -219,8 +219,8 @@ def debug(fn: Callable) -> Callable:
         return result
     return wrapper
 
-
-def get_sessions(pd_series: pd.Series, diff=pd.Timedelta(30, 'min')) -> pd.Series:
+_TIMEDELTA_30M = pd.Timedelta(30, 'min')
+def get_sessions(pd_series: pd.Series, diff=_TIMEDELTA_30M) -> pd.Series:
     """Group elements into "sessions".
 
     Compute groups (sessions) chained together by `diff` units. Assumes pd_series is sorted.
@@ -419,9 +419,7 @@ def _read_file(filename: Path | str, base='data', verbose=True, **kwargs) -> pd.
     assert P_READ.exists()
     if filename.endswith('.feather'):
         df = pd.read_feather(P_READ, **kwargs)
-    elif filename.endswith('.parquet'):
-        df = pd.read_parquet(P_READ, **kwargs)
-    elif filename.endswith('.parquet.gzip'):
+    elif filename.endswith(('.parquet', '.parquet.gzip')):
         df = pd.read_parquet(P_READ, **kwargs)
     elif filename.endswith('.pkl'):
         df = pd.read_pickle(P_READ, **kwargs)
@@ -606,7 +604,7 @@ def disp(df: pd.DataFrame, caption='', k=2, na_rep='-') -> pd.DataFrame:
     return df_captioned
 
 # Derived from: https://stackoverflow.com/a/57832026
-def displays(*args, captions: list[str] = None, k=2, na_rep='-'):
+def displays(*args, captions: list[str] | None = None, k=2, na_rep='-'):
     """
     (For Jupyter)
     Display tables side by side to save vertical space.
@@ -695,6 +693,7 @@ def htag(*args, **kwargs):
 def _hdetails(summary, content, **kwargs):
     if 'font_size' not in kwargs:
         kwargs['font_size'] = '16px'
+    # ruff: noqa: C408
     summary_style = dict(color='skyblue')
     content_style = dict(padding_left='1em')
     _non_str_style = dict(color='orange', font_family='monospace')
@@ -1466,7 +1465,7 @@ def report_numerical(pd_series: pd.Series, name='', k=2, proportiontocut=0, fill
         report_numerical_dict[f'{name} (median, [Q1, Q3], [min, max])'] = _row2
     return report_numerical_dict
 
-def report_rows(df: pd.DataFrame, cols: str | list[str]=None,
+def report_rows(df: pd.DataFrame, cols: str | list[str] | None = None,
                 dropna=False, k=2, proportiontocut=0, fillna=False, style=True) -> dict:
     """Report descriptive statistics as a dict.
 
@@ -1504,7 +1503,7 @@ def report_rows(df: pd.DataFrame, cols: str | list[str]=None,
             rows.update({(col, k): v for k, v in _items})
     return rows
 
-def report_rows_df(df: pd.DataFrame, cols: str | list[str]=None,
+def report_rows_df(df: pd.DataFrame, cols: str | list[str] | None = None,
                    dropna=False, k=2, proportiontocut=0, fillna=False, style=True) -> pd.DataFrame:
     """Report descriptive statistics.
 
